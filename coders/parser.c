@@ -6,13 +6,13 @@
 /*   By: gcabecas <gcabecas@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/30 12:14:15 by gcabecas          #+#    #+#             */
-/*   Updated: 2026/03/30 12:58:06 by gcabecas         ###   ########lyon.fr   */
+/*   Updated: 2026/03/30 21:36:51 by gcabecas         ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "codexion.h"
 
-static int	ft_is_valid_uint(char *str)
+static int	is_valid_uint(char *str)
 {
 	int		i;
 	size_t	len;
@@ -34,9 +34,9 @@ static int	ft_is_valid_uint(char *str)
 	return (1);
 }
 
-static int	ft_parse_one(char *str, int *out, int min)
+static int	parse_one(char *str, int *out, int min)
 {
-	if (!ft_is_valid_uint(str))
+	if (!is_valid_uint(str))
 		return (0);
 	*out = atoi(str);
 	if (*out < min)
@@ -44,26 +44,26 @@ static int	ft_parse_one(char *str, int *out, int min)
 	return (1);
 }
 
-static int	ft_parse_nums(char **argv, t_args *args)
+static int	parse_nums(char **argv, t_args *args)
 {
-	if (!ft_parse_one(argv[1], &args->nb_coders, 1))
+	if (!parse_one(argv[1], &args->nb_coders, 1))
 		return (0);
-	if (!ft_parse_one(argv[2], &args->time_to_burnout, 1))
+	if (!parse_one(argv[2], &args->time_to_burnout, 1))
 		return (0);
-	if (!ft_parse_one(argv[3], &args->time_to_compile, 0))
+	if (!parse_one(argv[3], &args->time_to_compile, 0))
 		return (0);
-	if (!ft_parse_one(argv[4], &args->time_to_debug, 0))
+	if (!parse_one(argv[4], &args->time_to_debug, 0))
 		return (0);
-	if (!ft_parse_one(argv[5], &args->time_to_refactor, 0))
+	if (!parse_one(argv[5], &args->time_to_refactor, 0))
 		return (0);
-	if (!ft_parse_one(argv[6], &args->nb_compiles, 1))
+	if (!parse_one(argv[6], &args->nb_compiles, 1))
 		return (0);
-	if (!ft_parse_one(argv[7], &args->dongle_cooldown, 0))
+	if (!parse_one(argv[7], &args->dongle_cooldown, 0))
 		return (0);
 	return (1);
 }
 
-static int	ft_parse_scheduler(char *str, t_args *args)
+static int	parse_scheduler(char *str, t_args *args)
 {
 	if (strcmp(str, "fifo") == 0)
 		args->is_edf = 0;
@@ -78,9 +78,9 @@ int	parse_args(int argc, char **argv, t_args *args)
 {
 	if (argc != 9)
 		return (0);
-	if (!ft_parse_nums(argv, args))
+	if (!parse_nums(argv, args))
 		return (0);
-	if (!ft_parse_scheduler(argv[8], args))
+	if (!parse_scheduler(argv[8], args))
 		return (0);
 	return (1);
 }

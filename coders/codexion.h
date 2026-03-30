@@ -6,7 +6,7 @@
 /*   By: gcabecas <gcabecas@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/30 12:13:31 by gcabecas          #+#    #+#             */
-/*   Updated: 2026/03/30 12:58:02 by gcabecas         ###   ########lyon.fr   */
+/*   Updated: 2026/03/30 21:36:43 by gcabecas         ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,12 @@
 # include <string.h>
 # include <pthread.h>
 # include <sys/time.h>
+
+typedef struct s_dongle
+{
+	pthread_mutex_t	mutex;
+	long long		last_release;
+}	t_dongle;
 
 typedef struct s_args
 {
@@ -44,6 +50,7 @@ typedef struct s_sim
 {
 	t_args			*args;
 	t_coder			*coders;
+	t_dongle		*dongles;
 	pthread_t		*threads;
 	pthread_mutex_t	print_mutex;
 	int				stop;
@@ -53,6 +60,8 @@ typedef struct s_sim
 int			parse_args(int argc, char **argv, t_args *args);
 t_sim		*init_sim(t_args *args);
 void		free_sim(t_sim *sim);
+int			take_dongles(t_coder *coder);
+void		release_dongles(t_coder *coder);
 int			create_threads(t_sim *sim);
 void		join_threads(t_sim *sim);
 long long	get_time_ms(t_sim *sim);

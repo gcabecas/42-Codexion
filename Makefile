@@ -9,6 +9,7 @@ OBJDIR = obj
 SRCS = $(SRCDIR)/main.c \
 	$(SRCDIR)/parser.c \
 	$(SRCDIR)/init.c \
+	$(SRCDIR)/dongle.c \
 	$(SRCDIR)/threads.c \
 	$(SRCDIR)/utils.c
 

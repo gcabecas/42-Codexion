@@ -6,13 +6,13 @@
 /*   By: gcabecas <gcabecas@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/30 12:48:03 by gcabecas          #+#    #+#             */
-/*   Updated: 2026/03/30 13:06:45 by gcabecas         ###   ########lyon.fr   */
+/*   Updated: 2026/03/30 21:36:53 by gcabecas         ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "codexion.h"
 
-static int	ft_all_done(t_sim *sim)
+static int	all_done(t_sim *sim)
 {
 	int	i;
 
@@ -26,19 +26,19 @@ static int	ft_all_done(t_sim *sim)
 	return (1);
 }
 
-static void	ft_run_cycle(t_coder *coder)
+static void	run_cycle(t_coder *coder)
 {
-	t_sim	*sim;
-
-	sim = coder->sim;
-	coder->last_compile_start = get_time_ms(sim);
-	print_log(sim, coder->id, "is compiling");
-	usleep((unsigned int)sim->args->time_to_compile * 1000);
+	if (!take_dongles(coder))
+		return ;
+	coder->last_compile_start = get_time_ms(coder->sim);
+	print_log(coder->sim, coder->id, "is compiling");
+	usleep((unsigned int)coder->sim->args->time_to_compile * 1000);
+	release_dongles(coder);
 	coder->compile_count++;
-	print_log(sim, coder->id, "is debugging");
-	usleep((unsigned int)sim->args->time_to_debug * 1000);
-	print_log(sim, coder->id, "is refactoring");
-	usleep((unsigned int)sim->args->time_to_refactor * 1000);
+	print_log(coder->sim, coder->id, "is debugging");
+	usleep((unsigned int)coder->sim->args->time_to_debug * 1000);
+	print_log(coder->sim, coder->id, "is refactoring");
+	usleep((unsigned int)coder->sim->args->time_to_refactor * 1000);
 }
 
 static void	*coder_routine(void *arg)
@@ -48,8 +48,8 @@ static void	*coder_routine(void *arg)
 	coder = (t_coder *)arg;
 	while (!coder->sim->stop)
 	{
-		ft_run_cycle(coder);
-		if (ft_all_done(coder->sim))
+		run_cycle(coder);
+		if (all_done(coder->sim))
 		{
 			coder->sim->stop = 1;
 			break ;
