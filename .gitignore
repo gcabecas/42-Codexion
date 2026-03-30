@@ -1,0 +1,7 @@
+codexion
+*.o
+.vscode/
+*.swp
+*.swo
+*.pdf
+obj/
