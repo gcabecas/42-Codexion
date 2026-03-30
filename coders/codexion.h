@@ -35,6 +35,8 @@ typedef struct s_args
 typedef struct s_coder
 {
 	int				id;
+	int				compile_count;
+	long long		last_compile_start;
 	struct s_sim	*sim;
 }	t_coder;
 
@@ -48,10 +50,12 @@ typedef struct s_sim
 	long long		start_time;
 }	t_sim;
 
-int		parse_args(int argc, char **argv, t_args *args);
-t_sim	*init_sim(t_args *args);
-void	free_sim(t_sim *sim);
-int		create_threads(t_sim *sim);
-void	join_threads(t_sim *sim);
+int			parse_args(int argc, char **argv, t_args *args);
+t_sim		*init_sim(t_args *args);
+void		free_sim(t_sim *sim);
+int			create_threads(t_sim *sim);
+void		join_threads(t_sim *sim);
+long long	get_time_ms(t_sim *sim);
+void		print_log(t_sim *sim, int id, char *msg);
 
 #endif

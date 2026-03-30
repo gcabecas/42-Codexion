@@ -9,7 +9,8 @@ OBJDIR = obj
 SRCS = $(SRCDIR)/main.c \
 	$(SRCDIR)/parser.c \
 	$(SRCDIR)/init.c \
-	$(SRCDIR)/threads.c
+	$(SRCDIR)/threads.c \
+	$(SRCDIR)/utils.c
 
 OBJS = $(SRCS:$(SRCDIR)/%.c=$(OBJDIR)/%.o)
 DEPS = $(OBJS:.o=.d)
