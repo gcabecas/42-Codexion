@@ -29,14 +29,12 @@ static int	all_done(t_sim *sim)
 static void	check_burnout(t_sim *sim)
 {
 	int			i;
-	long long	now;
 	long long	elapsed;
 
-	now = get_time_ms(sim);
 	i = 0;
 	while (i < sim->args->nb_coders)
 	{
-		elapsed = now - get_compile_start(&sim->coders[i]);
+		elapsed = get_time_ms(sim) - get_compile_start(&sim->coders[i]);
 		if (elapsed > sim->args->time_to_burnout)
 		{
 			print_log(sim, sim->coders[i].id, "burned out");

@@ -84,28 +84,29 @@ static int	wait_dongle(t_coder *coder, int idx)
 
 int	take_dongles(t_coder *coder)
 {
-	t_sim	*sim;
-	int		first;
-	int		second;
+	int	first;
+	int	second;
 
-	sim = coder->sim;
 	first = coder->id - 1;
-	second = coder->id % sim->args->nb_coders;
+	second = coder->id % coder->sim->args->nb_coders;
 	if (first > second)
 	{
-		first = coder->id % sim->args->nb_coders;
+		first = coder->id % coder->sim->args->nb_coders;
 		second = coder->id - 1;
 	}
 	if (first == second)
+	{
+		usleep(1000);
 		return (0);
+	}
 	if (!wait_dongle(coder, first))
 		return (0);
-	print_log(sim, coder->id, "has taken a dongle");
+	print_log(coder->sim, coder->id, "has taken a dongle");
 	if (!wait_dongle(coder, second))
 	{
 		release_one(coder, first);
 		return (0);
 	}
-	print_log(sim, coder->id, "has taken a dongle");
+	print_log(coder->sim, coder->id, "has taken a dongle");
 	return (1);
 }

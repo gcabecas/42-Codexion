@@ -12,6 +12,15 @@
 
 #include "codexion.h"
 
+static int	beats(t_request *a, t_request *b)
+{
+	if (a->priority < b->priority)
+		return (1);
+	if (a->priority == b->priority && a->coder_id < b->coder_id)
+		return (1);
+	return (0);
+}
+
 void	queue_sift_up(t_queue *h, int idx)
 {
 	int			parent;
@@ -20,7 +29,7 @@ void	queue_sift_up(t_queue *h, int idx)
 	while (idx > 0)
 	{
 		parent = (idx - 1) / 2;
-		if (h->data[parent].priority <= h->data[idx].priority)
+		if (!beats(&h->data[idx], &h->data[parent]))
 			break ;
 		tmp = h->data[parent];
 		h->data[parent] = h->data[idx];
@@ -38,11 +47,9 @@ static int	get_smallest(t_queue *h, int idx)
 	smallest = idx;
 	left = 2 * idx + 1;
 	right = 2 * idx + 2;
-	if (left < h->size
-		&& h->data[left].priority < h->data[smallest].priority)
+	if (left < h->size && beats(&h->data[left], &h->data[smallest]))
 		smallest = left;
-	if (right < h->size
-		&& h->data[right].priority < h->data[smallest].priority)
+	if (right < h->size && beats(&h->data[right], &h->data[smallest]))
 		smallest = right;
 	return (smallest);
 }
