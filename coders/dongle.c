@@ -6,57 +6,80 @@
 /*   By: gcabecas <gcabecas@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/30 16:48:14 by gcabecas          #+#    #+#             */
-/*   Updated: 2026/03/31 09:28:43 by gcabecas         ###   ########lyon.fr   */
+/*   Updated: 2026/03/31 11:01:17 by gcabecas         ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "codexion.h"
 
-static int	dongle_available(t_sim *sim, int idx)
+static int	can_take(t_dongle *d, t_sim *sim, int coder_id)
 {
-	long long	released;
+	t_request	*top;
+	long long	elapsed;
 
-	released = sim->dongles[idx].last_release;
-	if (!released)
-		return (1);
-	return (get_time_ms(sim) - released >= sim->args->dongle_cooldown);
-}
-
-static int	try_take_dongle(t_coder *coder, int idx)
-{
-	t_sim	*sim;
-
-	sim = coder->sim;
-	if (pthread_mutex_trylock(&sim->dongles[idx].mutex) != 0)
+	if (d->held)
 		return (0);
-	if (!dongle_available(sim, idx))
+	if (d->last_release)
 	{
-		pthread_mutex_unlock(&sim->dongles[idx].mutex);
-		return (0);
+		elapsed = get_time_ms(sim) - d->last_release;
+		if (elapsed < sim->args->dongle_cooldown)
+			return (0);
 	}
+	top = queue_peek(&d->queue);
+	if (!top || top->coder_id != coder_id)
+		return (0);
 	return (1);
 }
 
-static int	acquire_first(t_coder *coder, int first, int second)
+static void	get_timeout(struct timespec *ts)
+{
+	struct timeval	tv;
+
+	gettimeofday(&tv, NULL);
+	ts->tv_sec = tv.tv_sec;
+	ts->tv_nsec = tv.tv_usec * 1000 + 1000000;
+	if (ts->tv_nsec >= 1000000000)
+	{
+		ts->tv_sec++;
+		ts->tv_nsec -= 1000000000;
+	}
+}
+
+static long long	get_priority(t_coder *coder)
 {
 	t_sim	*sim;
 
 	sim = coder->sim;
-	while (!is_stopped(sim))
+	if (sim->args->is_edf)
+		return (get_compile_start(coder) + sim->args->time_to_burnout);
+	return (get_time_ms(sim));
+}
+
+static int	wait_dongle(t_coder *coder, int idx)
+{
+	t_dongle		*d;
+	t_request		req;
+	struct timespec	ts;
+
+	d = &coder->sim->dongles[idx];
+	pthread_mutex_lock(&d->mutex);
+	req.coder_id = coder->id;
+	req.priority = get_priority(coder);
+	queue_push(&d->queue, req);
+	while (!is_stopped(coder->sim) && !can_take(d, coder->sim, coder->id))
 	{
-		if (try_take_dongle(coder, first))
-		{
-			print_log(sim, coder->id, "has taken a dongle");
-			if (first != second)
-				return (1);
-			while (!is_stopped(sim))
-				usleep(100);
-			pthread_mutex_unlock(&sim->dongles[first].mutex);
-			return (0);
-		}
-		usleep(500);
+		get_timeout(&ts);
+		pthread_cond_timedwait(&d->cond, &d->mutex, &ts);
 	}
-	return (0);
+	if (is_stopped(coder->sim))
+	{
+		pthread_mutex_unlock(&d->mutex);
+		return (0);
+	}
+	d->held = 1;
+	queue_pop(&d->queue);
+	pthread_mutex_unlock(&d->mutex);
+	return (1);
 }
 
 int	take_dongles(t_coder *coder)
@@ -73,36 +96,16 @@ int	take_dongles(t_coder *coder)
 		first = coder->id % sim->args->nb_coders;
 		second = coder->id - 1;
 	}
-	if (!acquire_first(coder, first, second))
+	if (first == second)
 		return (0);
-	while (!is_stopped(sim))
+	if (!wait_dongle(coder, first))
+		return (0);
+	print_log(sim, coder->id, "has taken a dongle");
+	if (!wait_dongle(coder, second))
 	{
-		if (try_take_dongle(coder, second))
-		{
-			print_log(sim, coder->id, "has taken a dongle");
-			return (1);
-		}
-		usleep(500);
+		release_one(coder, first);
+		return (0);
 	}
-	pthread_mutex_unlock(&sim->dongles[first].mutex);
-	return (0);
-}
-
-void	release_dongles(t_coder *coder)
-{
-	t_sim		*sim;
-	int			left;
-	int			right;
-	long long	now;
-
-	sim = coder->sim;
-	left = coder->id - 1;
-	right = coder->id % sim->args->nb_coders;
-	now = get_time_ms(sim);
-	sim->dongles[left].last_release = now;
-	pthread_mutex_unlock(&sim->dongles[left].mutex);
-	if (left == right)
-		return ;
-	sim->dongles[right].last_release = now;
-	pthread_mutex_unlock(&sim->dongles[right].mutex);
+	print_log(sim, coder->id, "has taken a dongle");
+	return (1);
 }

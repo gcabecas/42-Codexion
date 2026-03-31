@@ -9,10 +9,15 @@ OBJDIR = obj
 SRCS = $(SRCDIR)/main.c \
 	$(SRCDIR)/parser.c \
 	$(SRCDIR)/init.c \
+	$(SRCDIR)/free.c \
 	$(SRCDIR)/dongle.c \
+	$(SRCDIR)/dongle_release.c \
 	$(SRCDIR)/threads.c \
-	$(SRCDIR)/monitor.c \
-	$(SRCDIR)/utils.c
+	$(SRCDIR)/burnout.c \
+	$(SRCDIR)/utils.c \
+	$(SRCDIR)/coder_utils.c \
+	$(SRCDIR)/queue.c \
+	$(SRCDIR)/queue_utils.c
 
 OBJS = $(SRCS:$(SRCDIR)/%.c=$(OBJDIR)/%.o)
 DEPS = $(OBJS:.o=.d)

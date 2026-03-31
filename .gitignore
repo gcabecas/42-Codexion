@@ -5,3 +5,4 @@ codexion
 *.swo
 *.pdf
 obj/
+*.txt

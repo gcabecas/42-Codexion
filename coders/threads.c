@@ -6,7 +6,7 @@
 /*   By: gcabecas <gcabecas@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/30 12:48:03 by gcabecas          #+#    #+#             */
-/*   Updated: 2026/03/31 09:29:01 by gcabecas         ###   ########lyon.fr   */
+/*   Updated: 2026/03/31 11:01:30 by gcabecas         ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,11 +16,11 @@ static void	run_cycle(t_coder *coder)
 {
 	if (!take_dongles(coder))
 		return ;
-	coder->last_compile_start = get_time_ms(coder->sim);
+	set_compile_start(coder, get_time_ms(coder->sim));
 	print_log(coder->sim, coder->id, "is compiling");
 	usleep((unsigned int)coder->sim->args->time_to_compile * 1000);
 	release_dongles(coder);
-	coder->compile_count++;
+	inc_compile_count(coder);
 	if (is_stopped(coder->sim))
 		return ;
 	print_log(coder->sim, coder->id, "is debugging");
@@ -60,7 +60,7 @@ int	create_threads(t_sim *sim)
 		}
 		i++;
 	}
-	if (pthread_create(&sim->monitor, NULL, monitor_routine, sim) != 0)
+	if (pthread_create(&sim->burnout, NULL, burnout_routine, sim) != 0)
 	{
 		set_stop(sim);
 		return (0);
@@ -78,5 +78,5 @@ void	join_threads(t_sim *sim)
 		pthread_join(sim->threads[i], NULL);
 		i++;
 	}
-	pthread_join(sim->monitor, NULL);
+	pthread_join(sim->burnout, NULL);
 }

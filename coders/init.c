@@ -6,7 +6,7 @@
 /*   By: gcabecas <gcabecas@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/30 12:43:28 by gcabecas          #+#    #+#             */
-/*   Updated: 2026/03/31 09:28:52 by gcabecas         ###   ########lyon.fr   */
+/*   Updated: 2026/03/31 11:01:20 by gcabecas         ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,7 +44,13 @@ static void	*cleanup(t_sim *sim, int n_dongles)
 
 	i = 0;
 	while (i < n_dongles)
-		pthread_mutex_destroy(&sim->dongles[i++].mutex);
+	{
+		pthread_cond_destroy(&sim->dongles[i].cond);
+		queue_destroy(&sim->dongles[i].queue);
+		pthread_mutex_destroy(&sim->dongles[i].mutex);
+		pthread_mutex_destroy(&sim->coders[i].mutex);
+		i++;
+	}
 	pthread_mutex_destroy(&sim->print_mutex);
 	pthread_mutex_destroy(&sim->stop_mutex);
 	free(sim->coders);
@@ -63,6 +69,22 @@ static int	init_mutexes(t_sim *sim)
 		pthread_mutex_destroy(&sim->stop_mutex);
 		return (0);
 	}
+	return (1);
+}
+
+static int	init_entity(t_sim *sim, int i)
+{
+	if (pthread_mutex_init(&sim->dongles[i].mutex, NULL) != 0)
+		return (0);
+	pthread_cond_init(&sim->dongles[i].cond, NULL);
+	queue_init(&sim->dongles[i].queue, sim->args->nb_coders);
+	sim->dongles[i].last_release = 0;
+	sim->dongles[i].held = 0;
+	pthread_mutex_init(&sim->coders[i].mutex, NULL);
+	sim->coders[i].id = i + 1;
+	sim->coders[i].compile_count = 0;
+	sim->coders[i].last_compile_start = 0;
+	sim->coders[i].sim = sim;
 	return (1);
 }
 
@@ -85,29 +107,9 @@ t_sim	*init_sim(t_args *args)
 	i = 0;
 	while (i < args->nb_coders)
 	{
-		if (pthread_mutex_init(&sim->dongles[i].mutex, NULL) != 0)
+		if (!init_entity(sim, i))
 			return (cleanup(sim, i));
-		sim->dongles[i].last_release = 0;
-		sim->coders[i].id = i + 1;
-		sim->coders[i].sim = sim;
 		i++;
 	}
 	return (sim);
-}
-
-void	free_sim(t_sim *sim)
-{
-	int	i;
-
-	if (!sim)
-		return ;
-	i = 0;
-	while (i < sim->args->nb_coders)
-		pthread_mutex_destroy(&sim->dongles[i++].mutex);
-	free(sim->dongles);
-	free(sim->coders);
-	free(sim->threads);
-	pthread_mutex_destroy(&sim->print_mutex);
-	pthread_mutex_destroy(&sim->stop_mutex);
-	free(sim);
 }

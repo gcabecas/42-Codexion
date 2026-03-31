@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   monitor.c                                          :+:      :+:    :+:   */
+/*   burnout.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: gcabecas <gcabecas@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/31 09:05:48 by gcabecas          #+#    #+#             */
-/*   Updated: 2026/03/31 09:28:57 by gcabecas         ###   ########lyon.fr   */
+/*   Updated: 2026/03/31 11:01:05 by gcabecas         ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@ static int	all_done(t_sim *sim)
 	i = 0;
 	while (i < sim->args->nb_coders)
 	{
-		if (sim->coders[i].compile_count < sim->args->nb_compiles)
+		if (get_compile_count(&sim->coders[i]) < sim->args->nb_compiles)
 			return (0);
 		i++;
 	}
@@ -36,7 +36,7 @@ static void	check_burnout(t_sim *sim)
 	i = 0;
 	while (i < sim->args->nb_coders)
 	{
-		elapsed = now - sim->coders[i].last_compile_start;
+		elapsed = now - get_compile_start(&sim->coders[i]);
 		if (elapsed > sim->args->time_to_burnout)
 		{
 			print_log(sim, sim->coders[i].id, "burned out");
@@ -47,7 +47,7 @@ static void	check_burnout(t_sim *sim)
 	}
 }
 
-void	*monitor_routine(void *arg)
+void	*burnout_routine(void *arg)
 {
 	t_sim	*sim;
 

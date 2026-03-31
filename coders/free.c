@@ -1,36 +1,36 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main.c                                             :+:      :+:    :+:   */
+/*   free.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: gcabecas <gcabecas@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/03/30 12:13:47 by gcabecas          #+#    #+#             */
-/*   Updated: 2026/03/31 11:01:22 by gcabecas         ###   ########lyon.fr   */
+/*   Created: 2026/03/31 10:42:52 by gcabecas          #+#    #+#             */
+/*   Updated: 2026/03/31 11:01:19 by gcabecas         ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "codexion.h"
 
-int	main(int argc, char **argv)
+void	free_sim(t_sim *sim)
 {
-	t_args	args;
-	t_sim	*sim;
+	int	i;
 
-	if (!parse_args(argc, argv, &args))
-	{
-		fprintf(stderr, "Error: invalid arguments.\n");
-		return (1);
-	}
-	sim = init_sim(&args);
 	if (!sim)
-		return (1);
-	if (!create_threads(sim))
+		return ;
+	i = 0;
+	while (i < sim->args->nb_coders)
 	{
-		free_sim(sim);
-		return (1);
+		pthread_cond_destroy(&sim->dongles[i].cond);
+		queue_destroy(&sim->dongles[i].queue);
+		pthread_mutex_destroy(&sim->dongles[i].mutex);
+		pthread_mutex_destroy(&sim->coders[i].mutex);
+		i++;
 	}
-	join_threads(sim);
-	free_sim(sim);
-	return (0);
+	free(sim->dongles);
+	free(sim->coders);
+	free(sim->threads);
+	pthread_mutex_destroy(&sim->print_mutex);
+	pthread_mutex_destroy(&sim->stop_mutex);
+	free(sim);
 }
