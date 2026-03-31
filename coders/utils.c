@@ -6,7 +6,7 @@
 /*   By: gcabecas <gcabecas@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/30 13:07:02 by gcabecas          #+#    #+#             */
-/*   Updated: 2026/03/30 21:36:54 by gcabecas         ###   ########lyon.fr   */
+/*   Updated: 2026/03/31 09:29:02 by gcabecas         ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,4 +28,21 @@ void	print_log(t_sim *sim, int id, char *msg)
 	pthread_mutex_lock(&sim->print_mutex);
 	printf("%lld %d %s\n", ts, id, msg);
 	pthread_mutex_unlock(&sim->print_mutex);
+}
+
+void	set_stop(t_sim *sim)
+{
+	pthread_mutex_lock(&sim->stop_mutex);
+	sim->stop = 1;
+	pthread_mutex_unlock(&sim->stop_mutex);
+}
+
+int	is_stopped(t_sim *sim)
+{
+	int	stopped;
+
+	pthread_mutex_lock(&sim->stop_mutex);
+	stopped = sim->stop;
+	pthread_mutex_unlock(&sim->stop_mutex);
+	return (stopped);
 }

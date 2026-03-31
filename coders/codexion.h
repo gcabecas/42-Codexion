@@ -6,7 +6,7 @@
 /*   By: gcabecas <gcabecas@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/30 12:13:31 by gcabecas          #+#    #+#             */
-/*   Updated: 2026/03/30 21:36:43 by gcabecas         ###   ########lyon.fr   */
+/*   Updated: 2026/03/31 09:28:41 by gcabecas         ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,7 +52,9 @@ typedef struct s_sim
 	t_coder			*coders;
 	t_dongle		*dongles;
 	pthread_t		*threads;
+	pthread_t		monitor;
 	pthread_mutex_t	print_mutex;
+	pthread_mutex_t	stop_mutex;
 	int				stop;
 	long long		start_time;
 }	t_sim;
@@ -66,5 +68,8 @@ int			create_threads(t_sim *sim);
 void		join_threads(t_sim *sim);
 long long	get_time_ms(t_sim *sim);
 void		print_log(t_sim *sim, int id, char *msg);
+void		set_stop(t_sim *sim);
+int			is_stopped(t_sim *sim);
+void		*monitor_routine(void *arg);
 
 #endif

@@ -6,7 +6,7 @@
 /*   By: gcabecas <gcabecas@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/30 12:43:28 by gcabecas          #+#    #+#             */
-/*   Updated: 2026/03/30 21:36:48 by gcabecas         ###   ########lyon.fr   */
+/*   Updated: 2026/03/31 09:28:52 by gcabecas         ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,11 +46,24 @@ static void	*cleanup(t_sim *sim, int n_dongles)
 	while (i < n_dongles)
 		pthread_mutex_destroy(&sim->dongles[i++].mutex);
 	pthread_mutex_destroy(&sim->print_mutex);
+	pthread_mutex_destroy(&sim->stop_mutex);
 	free(sim->coders);
 	free(sim->threads);
 	free(sim->dongles);
 	free(sim);
 	return (NULL);
+}
+
+static int	init_mutexes(t_sim *sim)
+{
+	if (pthread_mutex_init(&sim->stop_mutex, NULL) != 0)
+		return (0);
+	if (pthread_mutex_init(&sim->print_mutex, NULL) != 0)
+	{
+		pthread_mutex_destroy(&sim->stop_mutex);
+		return (0);
+	}
+	return (1);
 }
 
 t_sim	*init_sim(t_args *args)
@@ -61,7 +74,7 @@ t_sim	*init_sim(t_args *args)
 	sim = alloc_sim(args);
 	if (!sim)
 		return (NULL);
-	if (pthread_mutex_init(&sim->print_mutex, NULL) != 0)
+	if (!init_mutexes(sim))
 	{
 		free(sim->coders);
 		free(sim->threads);
@@ -95,5 +108,6 @@ void	free_sim(t_sim *sim)
 	free(sim->coders);
 	free(sim->threads);
 	pthread_mutex_destroy(&sim->print_mutex);
+	pthread_mutex_destroy(&sim->stop_mutex);
 	free(sim);
 }

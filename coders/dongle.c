@@ -6,7 +6,7 @@
 /*   By: gcabecas <gcabecas@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/30 16:48:14 by gcabecas          #+#    #+#             */
-/*   Updated: 2026/03/30 21:36:45 by gcabecas         ###   ########lyon.fr   */
+/*   Updated: 2026/03/31 09:28:43 by gcabecas         ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,14 +42,14 @@ static int	acquire_first(t_coder *coder, int first, int second)
 	t_sim	*sim;
 
 	sim = coder->sim;
-	while (!sim->stop)
+	while (!is_stopped(sim))
 	{
 		if (try_take_dongle(coder, first))
 		{
 			print_log(sim, coder->id, "has taken a dongle");
 			if (first != second)
 				return (1);
-			while (!sim->stop)
+			while (!is_stopped(sim))
 				usleep(100);
 			pthread_mutex_unlock(&sim->dongles[first].mutex);
 			return (0);
@@ -75,7 +75,7 @@ int	take_dongles(t_coder *coder)
 	}
 	if (!acquire_first(coder, first, second))
 		return (0);
-	while (!sim->stop)
+	while (!is_stopped(sim))
 	{
 		if (try_take_dongle(coder, second))
 		{

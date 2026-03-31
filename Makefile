@@ -11,6 +11,7 @@ SRCS = $(SRCDIR)/main.c \
 	$(SRCDIR)/init.c \
 	$(SRCDIR)/dongle.c \
 	$(SRCDIR)/threads.c \
+	$(SRCDIR)/monitor.c \
 	$(SRCDIR)/utils.c
 
 OBJS = $(SRCS:$(SRCDIR)/%.c=$(OBJDIR)/%.o)
