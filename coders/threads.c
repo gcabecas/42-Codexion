@@ -6,11 +6,23 @@
 /*   By: gcabecas <gcabecas@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/30 12:48:03 by gcabecas          #+#    #+#             */
-/*   Updated: 2026/03/31 11:01:30 by gcabecas         ###   ########lyon.fr   */
+/*   Updated: 2026/03/31 12:39:51 by gcabecas         ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "codexion.h"
+
+static void	join_some_threads(t_sim *sim, int count)
+{
+	int	i;
+
+	i = 0;
+	while (i < count)
+	{
+		pthread_join(sim->threads[i], NULL);
+		i++;
+	}
+}
 
 static void	run_cycle(t_coder *coder)
 {
@@ -36,6 +48,8 @@ static void	*coder_routine(void *arg)
 	t_coder	*coder;
 
 	coder = (t_coder *)arg;
+	if (!wait_sim_start(coder->sim))
+		return (NULL);
 	while (!is_stopped(coder->sim))
 	{
 		run_cycle(coder);
@@ -43,7 +57,7 @@ static void	*coder_routine(void *arg)
 	return (NULL);
 }
 
-int	create_threads(t_sim *sim)
+static int	create_coder_threads(t_sim *sim)
 {
 	int	i;
 	int	ret;
@@ -56,27 +70,26 @@ int	create_threads(t_sim *sim)
 		if (ret != 0)
 		{
 			set_stop(sim);
+			start_sim(sim);
+			join_some_threads(sim, i);
 			return (0);
 		}
 		i++;
 	}
-	if (pthread_create(&sim->burnout, NULL, burnout_routine, sim) != 0)
-	{
-		set_stop(sim);
-		return (0);
-	}
 	return (1);
 }
 
-void	join_threads(t_sim *sim)
+int	create_threads(t_sim *sim)
 {
-	int	i;
-
-	i = 0;
-	while (i < sim->args->nb_coders)
+	if (!create_coder_threads(sim))
+		return (0);
+	if (pthread_create(&sim->burnout, NULL, burnout_routine, sim) != 0)
 	{
-		pthread_join(sim->threads[i], NULL);
-		i++;
+		set_stop(sim);
+		start_sim(sim);
+		join_some_threads(sim, sim->args->nb_coders);
+		return (0);
 	}
-	pthread_join(sim->burnout, NULL);
+	start_sim(sim);
+	return (1);
 }

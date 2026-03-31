@@ -6,7 +6,7 @@
 /*   By: gcabecas <gcabecas@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/30 12:43:28 by gcabecas          #+#    #+#             */
-/*   Updated: 2026/03/31 11:01:20 by gcabecas         ###   ########lyon.fr   */
+/*   Updated: 2026/03/31 12:39:45 by gcabecas         ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,6 +53,8 @@ static void	*cleanup(t_sim *sim, int n_dongles)
 	}
 	pthread_mutex_destroy(&sim->print_mutex);
 	pthread_mutex_destroy(&sim->stop_mutex);
+	pthread_cond_destroy(&sim->start_cond);
+	pthread_mutex_destroy(&sim->start_mutex);
 	free(sim->coders);
 	free(sim->threads);
 	free(sim->dongles);
@@ -66,6 +68,19 @@ static int	init_mutexes(t_sim *sim)
 		return (0);
 	if (pthread_mutex_init(&sim->print_mutex, NULL) != 0)
 	{
+		pthread_mutex_destroy(&sim->stop_mutex);
+		return (0);
+	}
+	if (pthread_mutex_init(&sim->start_mutex, NULL) != 0)
+	{
+		pthread_mutex_destroy(&sim->print_mutex);
+		pthread_mutex_destroy(&sim->stop_mutex);
+		return (0);
+	}
+	if (pthread_cond_init(&sim->start_cond, NULL) != 0)
+	{
+		pthread_mutex_destroy(&sim->start_mutex);
+		pthread_mutex_destroy(&sim->print_mutex);
 		pthread_mutex_destroy(&sim->stop_mutex);
 		return (0);
 	}

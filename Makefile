@@ -13,8 +13,10 @@ SRCS = $(SRCDIR)/main.c \
 	$(SRCDIR)/dongle.c \
 	$(SRCDIR)/dongle_release.c \
 	$(SRCDIR)/threads.c \
+	$(SRCDIR)/threads_join.c \
 	$(SRCDIR)/burnout.c \
 	$(SRCDIR)/utils.c \
+	$(SRCDIR)/start_sync.c \
 	$(SRCDIR)/coder_utils.c \
 	$(SRCDIR)/queue.c \
 	$(SRCDIR)/queue_utils.c

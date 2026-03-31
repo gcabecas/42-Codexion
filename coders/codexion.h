@@ -6,7 +6,7 @@
 /*   By: gcabecas <gcabecas@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/30 12:13:31 by gcabecas          #+#    #+#             */
-/*   Updated: 2026/03/31 11:01:09 by gcabecas         ###   ########lyon.fr   */
+/*   Updated: 2026/03/31 12:39:40 by gcabecas         ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,7 +73,10 @@ typedef struct s_sim
 	pthread_t		burnout;
 	pthread_mutex_t	print_mutex;
 	pthread_mutex_t	stop_mutex;
+	pthread_mutex_t	start_mutex;
+	pthread_cond_t	start_cond;
 	int				stop;
+	int				start_ready;
 	long long		start_time;
 }	t_sim;
 
@@ -89,6 +92,8 @@ long long	get_time_ms(t_sim *sim);
 void		print_log(t_sim *sim, int id, char *msg);
 void		set_stop(t_sim *sim);
 int			is_stopped(t_sim *sim);
+int			wait_sim_start(t_sim *sim);
+void		start_sim(t_sim *sim);
 void		set_compile_start(t_coder *coder, long long time);
 long long	get_compile_start(t_coder *coder);
 void		inc_compile_count(t_coder *coder);

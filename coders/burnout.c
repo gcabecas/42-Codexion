@@ -6,7 +6,7 @@
 /*   By: gcabecas <gcabecas@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/31 09:05:48 by gcabecas          #+#    #+#             */
-/*   Updated: 2026/03/31 11:01:05 by gcabecas         ###   ########lyon.fr   */
+/*   Updated: 2026/03/31 12:39:37 by gcabecas         ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,6 +52,8 @@ void	*burnout_routine(void *arg)
 	t_sim	*sim;
 
 	sim = (t_sim *)arg;
+	if (!wait_sim_start(sim))
+		return (NULL);
 	while (!is_stopped(sim))
 	{
 		check_burnout(sim);

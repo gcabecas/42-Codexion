@@ -1,36 +1,30 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main.c                                             :+:      :+:    :+:   */
+/*   start_sync.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: gcabecas <gcabecas@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/03/30 12:13:47 by gcabecas          #+#    #+#             */
-/*   Updated: 2026/03/31 12:39:49 by gcabecas         ###   ########lyon.fr   */
+/*   Created: 2026/03/31 12:42:20 by gcabecas          #+#    #+#             */
+/*   Updated: 2026/03/31 12:43:08 by gcabecas         ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "codexion.h"
 
-int	main(int argc, char **argv)
+int	wait_sim_start(t_sim *sim)
 {
-	t_args	args;
-	t_sim	*sim;
+	pthread_mutex_lock(&sim->start_mutex);
+	while (!sim->start_ready && !sim->stop)
+		pthread_cond_wait(&sim->start_cond, &sim->start_mutex);
+	pthread_mutex_unlock(&sim->start_mutex);
+	return (!is_stopped(sim));
+}
 
-	if (!parse_args(argc, argv, &args))
-	{
-		fprintf(stderr, "Error: invalid arguments.\n");
-		return (1);
-	}
-	sim = init_sim(&args);
-	if (!sim)
-		return (1);
-	if (!create_threads(sim))
-	{
-		free_sim(sim);
-		return (1);
-	}
-	join_threads(sim);
-	free_sim(sim);
-	return (0);
+void	start_sim(t_sim *sim)
+{
+	pthread_mutex_lock(&sim->start_mutex);
+	sim->start_ready = 1;
+	pthread_cond_broadcast(&sim->start_cond);
+	pthread_mutex_unlock(&sim->start_mutex);
 }

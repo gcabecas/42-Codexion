@@ -1,38 +1,26 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   free.c                                             :+:      :+:    :+:   */
+/*   threads_join.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: gcabecas <gcabecas@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/03/31 10:42:52 by gcabecas          #+#    #+#             */
-/*   Updated: 2026/03/31 12:39:44 by gcabecas         ###   ########lyon.fr   */
+/*   Created: 2026/03/31 12:42:12 by gcabecas          #+#    #+#             */
+/*   Updated: 2026/03/31 12:43:10 by gcabecas         ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "codexion.h"
 
-void	free_sim(t_sim *sim)
+void	join_threads(t_sim *sim)
 {
 	int	i;
 
-	if (!sim)
-		return ;
 	i = 0;
 	while (i < sim->args->nb_coders)
 	{
-		pthread_cond_destroy(&sim->dongles[i].cond);
-		queue_destroy(&sim->dongles[i].queue);
-		pthread_mutex_destroy(&sim->dongles[i].mutex);
-		pthread_mutex_destroy(&sim->coders[i].mutex);
+		pthread_join(sim->threads[i], NULL);
 		i++;
 	}
-	free(sim->dongles);
-	free(sim->coders);
-	free(sim->threads);
-	pthread_mutex_destroy(&sim->print_mutex);
-	pthread_mutex_destroy(&sim->stop_mutex);
-	pthread_cond_destroy(&sim->start_cond);
-	pthread_mutex_destroy(&sim->start_mutex);
-	free(sim);
+	pthread_join(sim->burnout, NULL);
 }
