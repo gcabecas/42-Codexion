@@ -6,7 +6,7 @@
 /*   By: gcabecas <gcabecas@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/30 16:48:14 by gcabecas          #+#    #+#             */
-/*   Updated: 2026/03/31 12:39:43 by gcabecas         ###   ########lyon.fr   */
+/*   Updated: 2026/04/03 15:56:10 by gcabecas         ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,20 +31,6 @@ static int	can_take(t_dongle *d, t_sim *sim, int coder_id)
 	return (1);
 }
 
-static void	get_timeout(struct timespec *ts)
-{
-	struct timeval	tv;
-
-	gettimeofday(&tv, NULL);
-	ts->tv_sec = tv.tv_sec;
-	ts->tv_nsec = tv.tv_usec * 1000 + 1000000;
-	if (ts->tv_nsec >= 1000000000)
-	{
-		ts->tv_sec++;
-		ts->tv_nsec -= 1000000000;
-	}
-}
-
 static long long	get_priority(t_coder *coder)
 {
 	t_sim	*sim;
@@ -59,7 +45,6 @@ static int	wait_dongle(t_coder *coder, int idx)
 {
 	t_dongle		*d;
 	t_request		req;
-	struct timespec	ts;
 
 	d = &coder->sim->dongles[idx];
 	pthread_mutex_lock(&d->mutex);
@@ -68,8 +53,9 @@ static int	wait_dongle(t_coder *coder, int idx)
 	queue_push(&d->queue, req);
 	while (!is_stopped(coder->sim) && !can_take(d, coder->sim, coder->id))
 	{
-		get_timeout(&ts);
-		pthread_cond_timedwait(&d->cond, &d->mutex, &ts);
+		pthread_mutex_unlock(&d->mutex);
+		usleep(1000);
+		pthread_mutex_lock(&d->mutex);
 	}
 	if (is_stopped(coder->sim))
 	{

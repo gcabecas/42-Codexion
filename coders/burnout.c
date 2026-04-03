@@ -6,7 +6,7 @@
 /*   By: gcabecas <gcabecas@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/31 09:05:48 by gcabecas          #+#    #+#             */
-/*   Updated: 2026/03/31 12:39:37 by gcabecas         ###   ########lyon.fr   */
+/*   Updated: 2026/04/03 16:48:46 by gcabecas         ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,8 +37,8 @@ static void	check_burnout(t_sim *sim)
 		elapsed = get_time_ms(sim) - get_compile_start(&sim->coders[i]);
 		if (elapsed > sim->args->time_to_burnout)
 		{
-			print_log(sim, sim->coders[i].id, "burned out");
 			set_stop(sim);
+			print_log(sim, sim->coders[i].id, "burned out");
 			return ;
 		}
 		i++;

@@ -6,7 +6,7 @@
 /*   By: gcabecas <gcabecas@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/30 12:43:28 by gcabecas          #+#    #+#             */
-/*   Updated: 2026/03/31 12:39:45 by gcabecas         ###   ########lyon.fr   */
+/*   Updated: 2026/04/03 15:51:44 by gcabecas         ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,11 +91,26 @@ static int	init_entity(t_sim *sim, int i)
 {
 	if (pthread_mutex_init(&sim->dongles[i].mutex, NULL) != 0)
 		return (0);
-	pthread_cond_init(&sim->dongles[i].cond, NULL);
-	queue_init(&sim->dongles[i].queue, sim->args->nb_coders);
+	if (pthread_cond_init(&sim->dongles[i].cond, NULL) != 0)
+	{
+		pthread_mutex_destroy(&sim->dongles[i].mutex);
+		return (0);
+	}
+	if (!queue_init(&sim->dongles[i].queue, sim->args->nb_coders))
+	{
+		pthread_cond_destroy(&sim->dongles[i].cond);
+		pthread_mutex_destroy(&sim->dongles[i].mutex);
+		return (0);
+	}
 	sim->dongles[i].last_release = 0;
 	sim->dongles[i].held = 0;
-	pthread_mutex_init(&sim->coders[i].mutex, NULL);
+	if (pthread_mutex_init(&sim->coders[i].mutex, NULL) != 0)
+	{
+		queue_destroy(&sim->dongles[i].queue);
+		pthread_cond_destroy(&sim->dongles[i].cond);
+		pthread_mutex_destroy(&sim->dongles[i].mutex);
+		return (0);
+	}
 	sim->coders[i].id = i + 1;
 	sim->coders[i].compile_count = 0;
 	sim->coders[i].last_compile_start = 0;
